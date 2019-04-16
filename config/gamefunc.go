@@ -4,10 +4,6 @@ type CannotFindError interface {
 	Error() string
 }
 
-func (p Player) Infect() {
-	p.Infected = true
-}
-
 func GetRoleByName(RoleName string) (Role, bool) {
 	for i := range AllRoles {
 		if AllRoles[i].Name == RoleName {

@@ -77,7 +77,6 @@ func main() {
 	}
 	//Setups
 	config.SetupRole()
-
 	// Register the messageCreate func as a callback for MessageCreate events.
 	dg.AddHandler(vocalUpdate)
 	dg.AddHandler(botReady)

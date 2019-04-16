@@ -76,6 +76,42 @@ func ws(w http.ResponseWriter, r *http.Request) {
 			GameStart()
 		} else if rec.Action == "begin" {
 			GameBegin(rec)
+		} else if rec.Action == "delete" {
+			ChannelDelete()
+		} else if rec.Action == "day" {
+			DayPerm()
+		} else if rec.Action == "night" {
+			NightPerm()
+		} else if rec.Action == "dayP" {
+			DayPermPlayer(rec.ID)
+		} else if rec.Action == "nightP" {
+			NightPermPlayer(rec.ID)
+		} else if rec.Action == "kill" {
+			GameBegin(rec)
+		} else if rec.Action == "infect" {
+			Infect(rec.ID)
+		} else if rec.Action == "mute" {
+			Mute(rec.ID)
+		} else if rec.Action == "muteall" {
+			MuteAll()
+		} else if rec.Action == "reloadchan" {
+			ChannelReload()
+		} else if rec.Action == "dice" {
+			RollDice(rec.Type, rec.Amount)
+		} else if rec.Action == "chlg" {
+			ChienLoupChange()
+		} else if rec.Action == "mmort" {
+			MaitreMort()
+		} else if rec.Action == "vwin" {
+			VillageWin()
+		} else if rec.Action == "wwin" {
+			WolvesWin()
+		} else if rec.Action == "awin" {
+			AngelWin()
+		} else if rec.Action == "cwin" {
+			CoupleWin()
+		} else if rec.Action == "lgbwin" {
+			LoupBlancWin()
 		}
 	}
 }

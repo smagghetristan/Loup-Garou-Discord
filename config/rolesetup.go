@@ -176,8 +176,9 @@ func SetupRole() {
 	}
 
 	PF := Role{
-		Name:  "Petite Fille",
-		Image: "pf.png",
+		Name:        "Petite Fille",
+		Image:       "pf.png",
+		ChannelName: "petite-fille",
 		Description: `Pendant la nuit, tu peux jeter deux dès : un qui te permet de voir des messages de Loup Garou, sans consèquence, l'autre qui te permet de connaitre le pseudo d'un Loup. Si le second rate, un Loup-Garou peut voir ton pseudo.
 				During the nice you can roll two dice : one to see Werewolve's message, no consequence if fail. The other one to know a Werewolve's name. If it fails, a Wolf will see yours.`,
 		Team: Village,
@@ -261,5 +262,9 @@ func SetupRole() {
 	addRole(Ancien)
 	addRole(MO)
 	addRole(Ange)
+
+	SpecialChannels = append(SpecialChannels, "lg-gamestats")
+	SpecialChannels = append(SpecialChannels, "lg-vote")
+	SpecialChannels = append(SpecialChannels, "lg-morts")
 
 }

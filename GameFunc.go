@@ -2,6 +2,7 @@ package main
 
 import (
 	"Test/config"
+	Permissions "Test/perm"
 	"fmt"
 	"strings"
 	"time"
@@ -15,6 +16,138 @@ func GameStart() {
 		Finished: false,
 		Players:  config.Players,
 	}
+}
+
+func ChannelReload() {
+	ChannelDelete()
+	ChannelGenerator()
+}
+
+func ChannelDelete() {
+	if len(config.CurrentGame.Channels) > 0 {
+		for i := range config.CurrentGame.Channels {
+			_, err := dg.ChannelDelete(config.CurrentGame.Channels[i].ID)
+			if err != nil {
+				return
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
+	} else {
+		channels, err := dg.GuildChannels(config.GuildID)
+		if err != nil {
+			return
+		}
+		for k := range channels {
+			for i := range config.Channels {
+				if config.Channels[i] == channels[k].Name {
+					_, err := dg.ChannelDelete(channels[k].ID)
+					if err != nil {
+						return
+					}
+					time.Sleep(10 * time.Millisecond)
+				}
+			}
+			for i := range config.TeamChannels {
+				if config.TeamChannels[i] == channels[k].Name {
+					_, err := dg.ChannelDelete(channels[k].ID)
+					if err != nil {
+						return
+					}
+					time.Sleep(10 * time.Millisecond)
+				}
+			}
+			for i := range config.SpecialChannels {
+				if config.SpecialChannels[i] == channels[k].Name {
+					_, err := dg.ChannelDelete(channels[k].ID)
+					if err != nil {
+						return
+					}
+					time.Sleep(10 * time.Millisecond)
+				}
+			}
+		}
+	}
+
+	_, err := dg.ChannelDelete(config.CurrentGame.Deads.ID)
+	if err != nil {
+		return
+	}
+	time.Sleep(10 * time.Millisecond)
+	_, err = dg.ChannelDelete(config.CurrentGame.GameStats.ID)
+	if err != nil {
+		return
+	}
+	time.Sleep(10 * time.Millisecond)
+	_, err = dg.ChannelDelete(config.CurrentGame.Votes.ID)
+	if err != nil {
+		return
+	}
+}
+
+func GenerateSpecials() {
+	Perms := []*discordgo.PermissionOverwrite{{
+		ID:   config.GuildID,
+		Type: "role",
+		Deny: Permissions.VIEW_CHANNEL,
+	}, {
+		ID:    dg.State.User.ID,
+		Type:  "member",
+		Allow: Permissions.VIEW_CHANNEL,
+	}}
+	data := discordgo.GuildChannelCreateData{
+		Name:                 "lg-gamestats",
+		Type:                 discordgo.ChannelTypeGuildText,
+		ParentID:             config.CategoryID,
+		PermissionOverwrites: Perms,
+	}
+	channel, err := dg.GuildChannelCreateComplex(config.GuildID, data)
+	if err != nil {
+		//
+	}
+	config.CurrentGame.GameStats = channel
+	time.Sleep(10 * time.Millisecond)
+	Perms = []*discordgo.PermissionOverwrite{{
+		ID:   config.GuildID,
+		Type: "role",
+		Deny: Permissions.VIEW_CHANNEL,
+	}, {
+		ID:    dg.State.User.ID,
+		Type:  "member",
+		Allow: Permissions.VIEW_CHANNEL,
+	}}
+	data = discordgo.GuildChannelCreateData{
+		Name:                 "lg-vote",
+		Type:                 discordgo.ChannelTypeGuildText,
+		ParentID:             config.CategoryID,
+		PermissionOverwrites: Perms,
+	}
+	channel, err = dg.GuildChannelCreateComplex(config.GuildID, data)
+	if err != nil {
+		//
+	}
+	config.CurrentGame.Votes = channel
+	time.Sleep(10 * time.Millisecond)
+	Perms = []*discordgo.PermissionOverwrite{{
+		ID:   config.GuildID,
+		Type: "role",
+		Deny: Permissions.VIEW_CHANNEL,
+	}, {
+		ID:    dg.State.User.ID,
+		Type:  "member",
+		Allow: Permissions.VIEW_CHANNEL,
+	}}
+	data = discordgo.GuildChannelCreateData{
+		Name:                 "lg-morts",
+		Type:                 discordgo.ChannelTypeGuildText,
+		ParentID:             config.CategoryID,
+		PermissionOverwrites: Perms,
+	}
+	channel, err = dg.GuildChannelCreateComplex(config.GuildID, data)
+	if err != nil {
+		//
+	}
+	config.CurrentGame.Deads = channel
+	time.Sleep(10 * time.Millisecond)
 }
 
 func ChannelGenerator() {
@@ -40,12 +173,32 @@ func ChannelGenerator() {
 			toCreate = append(toCreate, config.CurrentGame.Players[i].Role.Team.ChannelName)
 		}
 	}
+	MDJid := ""
+	for i := range config.CurrentGame.Players {
+		if config.CurrentGame.Players[i].Role.Name == "MDJ" {
+			MDJid = config.CurrentGame.Players[i].ID
+		}
+	}
 
 	for i := range toCreate {
+		Perms := []*discordgo.PermissionOverwrite{{
+			ID:   config.GuildID,
+			Type: "role",
+			Deny: Permissions.VIEW_CHANNEL,
+		}, {
+			ID:    dg.State.User.ID,
+			Type:  "member",
+			Allow: Permissions.VIEW_CHANNEL,
+		}, {
+			ID:    MDJid,
+			Type:  "member",
+			Allow: Permissions.VIEW_CHANNEL,
+		}}
 		data := discordgo.GuildChannelCreateData{
-			Name:     toCreate[i],
-			Type:     discordgo.ChannelTypeGuildText,
-			ParentID: config.CategoryID,
+			Name:                 toCreate[i],
+			Type:                 discordgo.ChannelTypeGuildText,
+			ParentID:             config.CategoryID,
+			PermissionOverwrites: Perms,
 		}
 		channel, err := dg.GuildChannelCreateComplex(config.GuildID, data)
 		if err != nil {
@@ -61,7 +214,6 @@ func DMSender() {
 		if config.CurrentGame.Players[i].Role.Name == "MDJ" {
 			dm, err := dg.UserChannelCreate(config.CurrentGame.Players[i].ID)
 			if err != nil {
-				fmt.Println(err)
 				return
 			}
 			embed := &discordgo.MessageEmbed{
@@ -102,7 +254,6 @@ func DMSender() {
 				fmt.Println(err)
 				return
 			}
-
 		}
 	}
 }

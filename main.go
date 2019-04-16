@@ -11,6 +11,7 @@ import (
 	"Loup.Garou/config"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/fatih/color"
 	"github.com/gobuffalo/packr"
 	"github.com/gorilla/websocket"
 )
@@ -63,7 +64,7 @@ func scan(s *discordgo.Session) {
 }
 
 func botReady(s *discordgo.Session, event *discordgo.Ready) {
-	fmt.Println("Bot is ready !")
+	color.Green("Bot is ready !")
 	scan(s)
 }
 

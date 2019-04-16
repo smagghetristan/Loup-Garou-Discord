@@ -61,16 +61,13 @@ func RollDice(Type int, Amount int) {
 			break
 		}
 	}
-	fmt.Println(PFChan)
 	if exist {
 		if Type == 1 {
 			Won, embed := RollMessage(Type, roll)
-			fmt.Println(embed)
-			fmt.Println(PFChan.ID)
 			if Won {
 				_, err := dg.ChannelMessageSendEmbed(PFChan.ID, embed)
 				if err != nil {
-					fmt.Println(err)
+					//
 				}
 				for i := range config.CurrentGame.Channels {
 					if config.CurrentGame.Channels[i].Name == "loup-garou" {
@@ -213,4 +210,5 @@ func Kill(PlayerID string) {
 			}
 		}
 	}
+	config.BroadcastString(`{"act":"reload"}`)
 }

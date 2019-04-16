@@ -1,13 +1,14 @@
 package main
 
 import (
-	"Test/config"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"Loup.Garou/config"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/gobuffalo/packr"

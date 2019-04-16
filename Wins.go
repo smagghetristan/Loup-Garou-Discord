@@ -1,9 +1,10 @@
 package main
 
 import (
-	"Test/config"
 	"fmt"
 	"strings"
+
+	"Loup.Garou/config"
 
 	"github.com/bwmarrin/discordgo"
 )

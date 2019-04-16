@@ -1,9 +1,11 @@
 package main
 
 import (
-	"Test/config"
-	Permissions "Test/perm"
 	"time"
+
+	Permissions "Loup.Garou/perm"
+
+	"Loup.Garou/config"
 
 	"github.com/bwmarrin/discordgo"
 )

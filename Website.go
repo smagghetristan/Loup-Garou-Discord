@@ -1,9 +1,10 @@
 package main
 
 import (
-	"Test/config"
 	"fmt"
 	"net/http"
+
+	"Loup.Garou/config"
 )
 
 // ReceivedPlayer : fsdq

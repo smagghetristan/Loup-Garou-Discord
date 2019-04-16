@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Control Game Page </title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	</head>
+<body onload="Loaded();" background="background.png">
+	<br />
+	<div class="container">
+		<input onclick="window.location = './';" class="btn btn-primary" style="font-size:15px; position: absolute; top: 0; right: 0;" value="Settings Page">
+	</div>
+	<br /><br /><br /><br />
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-xs-8 col-xs-offset-1">
+				<h1 style="color:white;" id='count'> Players : </h1>
+				<ul id="players" style="font-size:20px; color:white">
+				</ul>
+			</div>
+			<div class="col-xs-2">
+				<h1 style="color:white;"> Actions : </h1>
+				<br/>
+				<div id="actions" class="list-group" style="font-size:20px; color:white">
+					<input onclick="Night();" class="btn btn-primary list-group-item list-group-item-info" style="font-size:15px; width:250px;" value="Night">
+					<br />
+					<input onclick="Day();" class="btn btn-primary list-group-item list-group-item-info" style="font-size:15px; width:250px;" value="Day">
+					<br />
+					<input onclick="reloadChannels();" class="btn btn-primary list-group-item list-group-item-info" style="font-size:15px; width:250px;" value="Reload Channels">
+					<br />
+					<input onclick="Delete();" class="btn btn-primary list-group-item list-group-item-info" style="font-size:15px; width:250px;" value="Delete Channels">
+					<br />
+					<input onclick="MuteAll();" class="btn btn-primary list-group-item list-group-item-info" style="font-size:15px; width:250px;" value="Mute All">
+					<br />
+					<input onclick="Dice(1, document.getElementById('pf').value);" class="btn btn-primary list-group-item list-group-item-info" style="font-size:15px; width:250px;" value="Petite Fille - Read Messages">
+					<input style="color:black; width:50px;" id="pf" value="10" type="number">
+					<br />
+					<input onclick="Dice(2);" class="btn btn-primary list-group-item list-group-item-info" style="font-size:15px; width:250px;" value="Petite Fille - Find Nickname">
+					<br />
+					<input onclick="MaitreMort();" class="btn btn-primary list-group-item list-group-item-info" style="font-size:15px; width:250px;" value="Master died (Before the night)">
+					<br />
+					<input onclick="CHLG(1);" class="btn btn-primary list-group-item list-group-item-info" style="font-size:15px; width:250px;" value="Chien-Loup : Village">
+					<br />
+					<input onclick="CHLG(2);" class="btn btn-primary list-group-item list-group-item-info" style="font-size:15px; width:250px;" value="Chien-Loup : Werewolf">
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-xs-3">
+				<input onclick="Vwin();" class="btn btn-warning btn-block" style="font-size:15px;" value="Villager Wins">
+			</div>
+			<div class="col-xs-3">
+				<input onclick="Wwin();" class="btn btn-warning btn-block" style="font-size:15px;" value="Werewolves Wins">
+			</div>
+		</div>
+		<br />
+		<div class="row">
+			<div class="col-xs-3">
+				<input onclick="Awin();" class="btn btn-warning btn-block" style="font-size:15px;" value="Angel Wins">
+			</div>
+			<div class="col-xs-3">
+				<input onclick="Cwin();" class="btn btn-warning btn-block" style="font-size:15px;" value="Couple Wins">
+			</div>
+		</div>
+		<br />
+		<div class="row">
+			<div class="col-xs-3">
+				<input onclick="LGBwin();" class="btn btn-warning btn-block" style="font-size:15px;" value="White Wolf Wins">
+			</div>
+		</div>
+	</div>
+</body>
+<script>
+	var Players;
+	function List(Players){
+		var html = '';
+		for(var i = 0; i < Object.keys(Players).length ; i++){
+			html += '<li > \n';
+			html += Players[Object.keys(Players)[i]]['username'] + ' <img src="'+ Players[Object.keys(Players)[i]]['picture'] +'" style="width:45px; height:45px; border-radius: 50%;">\n';
+			html += '<img id="player' + (i+1) + '" src="./mdj.png" style="width:35px; height:35px; border-radius: 50%; visibility: hidden;">\n';
+			if(Game['players'][i]['role'] != 'MDJ'){
+				html += '<input onclick="Kill(\'' + Object.keys(Players)[i] + '\');" class="btn btn-danger" style="font-size:15px; width:50px;" value="Kill">\n';
+				html += '<input onclick="Day(\'' + Object.keys(Players)[i] + '\');" class="btn btn-primary" style="font-size:15px; width:70px;" value="Day">\n';
+				html += '<input onclick="Night(\'' + Object.keys(Players)[i] + '\');" class="btn btn-primary" style="font-size:15px; width:70px;" value="Night">\n';
+				html += '<input onclick="Mute(\'' + Object.keys(Players)[i] + '\');" class="btn btn-primary" style="font-size:15px; width:60px;" value="Mute">\n';
+				html += '<input onclick="Infect(\'' + Object.keys(Players)[i] + '\');" class="btn btn-primary" style="font-size:15px; width:80px;" value="Infect">\n';
+				html += '<input style="margin-left:10px; color:black; width:50px;" value="0" type="number">';
+			};
+			html += '</li>\n';
+		};
+		document.getElementById('players').innerHTML = html;
+	};
+	
+	function Loaded(){
+		for(var i = 0; i < Object.keys(Players).length ; i++){
+			document.getElementById('player'+(i+1)).src = Cards[Game['players'][i]['role']];
+			document.getElementById('player'+(i+1)).style.visibility = 'visible';
+		};
+		document.getElementById('count').innerHTML = 'Players (' + Object.keys(Players).length + ') :';
+	};
+	
+	function Delete(){
+		ws.send(JSON.stringify({
+			act:"delete"
+		}));
+	};
+	
+	function Kill(ID){
+		ws.send(JSON.stringify({
+			act:"kill",
+			id:ID
+		}));
+		window.location = './control';
+	};
+	
+	function Infect(ID){
+		ws.send(JSON.stringify({
+			act:"infect",
+			id:ID
+		}));
+	};
+	
+	function Dice(vari, amount = false){
+		ws.send(JSON.stringify({
+			act:"dice",
+			vari:vari,
+			amount:amount
+		}));
+	};
+	
+	function Vwin(){
+		ws.send(JSON.stringify({
+			act:"vwin"
+		}));
+	};
+	
+	function LGBwin(){
+		ws.send(JSON.stringify({
+			act:"lgbwin"
+		}));
+	};
+	
+	function CHLG(vari){
+		ws.send(JSON.stringify({
+			act:"chlg",
+			vari:vari
+		}));
+	};
+	
+	function Wwin(){
+		ws.send(JSON.stringify({
+			act:"wwin"
+		}));
+	};
+	
+	function Awin(){
+		ws.send(JSON.stringify({
+			act:"awin"
+		}));
+	};
+	
+	function Cwin(){
+		ws.send(JSON.stringify({
+			act:"cwin"
+		}));
+	};
+	
+	function Mute(ID){
+		ws.send(JSON.stringify({
+			act:"mute",
+			id:ID
+		}));
+	};
+	
+	function MuteAll(){
+		ws.send(JSON.stringify({
+			act:"muteall"
+		}));
+	};
+	
+	function MaitreMort(){
+		ws.send(JSON.stringify({
+			act:"mmort"
+		}));
+	};
+	
+	function Day(ID = false){
+		if(!ID){
+			ws.send(JSON.stringify({
+				act:"day"
+			}));
+		} else {
+			ws.send(JSON.stringify({
+				act:"dayP",
+				id:ID
+			}));
+		};
+	};
+	
+	function Night(ID = false){
+		if(!ID){
+			ws.send(JSON.stringify({
+				act:"night"
+			}));
+		} else {
+			ws.send(JSON.stringify({
+				act:"nightP",
+				id:ID
+			}));
+		};
+	};
+	
+	function reloadChannels(ID = false){
+		ws.send(JSON.stringify({
+			act:"reloadchan"
+		}));
+	};
+	
+	if ("WebSocket" in window) {
+		var ws = new WebSocket("ws://pokeymon.yewolf.ovh:27018");
+		ws.onopen = function() {};
+		ws.onmessage = function (evt) { 
+			var message = evt.data;
+			var msg = JSON.parse(message);
+			if(msg['act'] == 'players'){
+				List(msg['players']);
+				Players = msg['players'];
+				Loaded();
+			} else if(msg['act'] == 'reload'){
+				window.location = './control';
+			};
+		};
+		ws.onerror = function (evt) { 
+			console.log(evt);
+		};
+		ws.onclose = function() { 
+			alert("Connection is closed..."); 
+		};
+	} else {
+		alert("Your browser is NOT supported!");
+	};
+</script>
+</html>

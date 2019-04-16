@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Start page</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	</head>
+<body background="./static/background.png">
+	<br />
+	<div class="container">
+		<input onclick="Delete();" class="btn btn-danger" style="font-size:15px; position: absolute; top: 0; right: 0;" value="Delete Channels">
+	</div>
+	<br />
+	<div class="container">
+		<input onclick="Start();" class="btn btn-primary btn-block" style="font-size:30px;" value="Begin !">
+	</div>
+	<br /><br /><br />
+	<div class="container">
+		<div class="row">
+			<div class="col-md-5 col-md-offset-5">
+				<h1 style="color:white;"> Players : </h1>
+				<ul id="players" style="font-size:20px; color:white">
+				</ul>
+			</div>
+		</div>
+	</div>
+</body>
+<script>
+	function Start(){
+		ws.send(JSON.stringify({
+			act:"start"
+		}));
+		window.location.reload(true);
+	};
+	function Delete(){
+		ws.send(JSON.stringify({
+			act:"delete"
+		}));
+	};
+	function List(Players){
+		var html = '';
+		for(var i = 0; i < Object.keys(Players).length ; i++){
+			html += '<li> \n';
+			html += Players[Object.keys(Players)[i]]['username'] + ' <img src="'+ Players[Object.keys(Players)[i]]['picture'] +'" style="width:45px; height:45px; border-radius: 50%;">\n';
+			html += '</li>\n';
+		};
+		document.getElementById('players').innerHTML = html;
+	};
+	if ("WebSocket" in window) {
+		var ws = new WebSocket("ws://127.0.0.1:8080/ws");
+		ws.onopen = function() {};
+		ws.onmessage = function (evt) { 
+			console.log(evt.data)
+			var message = evt.data;
+			var msg = JSON.parse(message);
+			if(msg['act'] == 'players'){
+				List(msg['players']);
+			};
+		};
+		ws.onclose = function() { 
+			alert("Connection is closed..."); 
+		};
+	} else {
+		alert("Your browser is NOT supported!");
+	};
+</script>
+</html>

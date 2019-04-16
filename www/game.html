@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Settings Page</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	</head>
+<body background="static/background.png">
+	<br />
+	<div class="container">
+		<input onclick="Delete();" class="btn btn-danger" style="font-size:15px; position: absolute; top: 0; right: 0;" value="Delete Channels">
+		<input onclick="Randomize();" class="btn btn-primary" style="font-size:15px; position: absolute; top: 40px; right: 0;" value="Randomize Roles !">
+		<input onclick="Validate();" class="btn btn-primary" id="validate" style="visibility:hidden; font-size:15px; position: absolute; top: 80px; right: 0;" value="Start Game !">
+		<input onclick="window.location = './control';" class="btn btn-primary" id="validate" style="visibility:visible; font-size:15px; position: absolute; top: 120px; right: 0;" value="Go to Control Panel !">
+	</div>
+	<br /><br /><br /><br />
+	<div class="container">
+		<div class="row">
+			<div class="col-md-7 col-md-offset-2">
+				<h1 style="color:white;" id="count"> Players : </h1>
+				<ul id="players" style="font-size:20px; color:white">
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-7 col-md-offset-2">
+				<h1 style="color:white;"> Roles : </h1>
+				<ul id="roles" style="font-size:20px; color:white">
+				</ul>
+			</div>
+		</div>
+	</div>
+</body>
+<script>
+	var Players;
+	var Names;
+	var Cards;
+	var Game;
+	var Done;
+	
+	function shuffle(a) {
+		for (let i = a.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[a[i], a[j]] = [a[j], a[i]];
+		};
+		return a;
+	};
+	
+	function Validate(){
+		console.log(JSON.stringify({
+			act:"begin",
+			roles:Game
+		}))
+		ws.send(JSON.stringify({
+			act:"begin",
+			roles:Game
+		}));
+	};
+
+	function Randomize(){
+		Total = 1;
+		for(var i = 1; i < Names.length-1 ; i++){
+			Total += parseInt(document.getElementById(Names[i]).value);
+		};
+		if(Total == Object.keys(Players).length){
+			RoleLeft = [];
+			PlayerLeft = [];
+			Game = {
+				players:[],
+				roles:[]
+			};
+			for(var i = 1; i < Names.length-1 ; i++){
+				if(document.getElementById(Names[i]).value > 0){
+					Game['roles'].push(Names[i]);
+				};
+				for(var k = 0; k < parseInt(document.getElementById(Names[i]).value); k++){
+					RoleLeft.push(Names[i]);
+				};
+			};
+			for(var i = 0; i < Object.keys(Players).length ; i++){
+				if(i+1 == document.getElementById('MDJ').value){
+					Game['players'].push({
+						id:Players[i]["id"],
+						role:'MDJ'
+					}); 
+				} else {
+					shuffle(RoleLeft);
+					index = Math.round((Math.random() * (RoleLeft.length-1)) + 0);
+					Game['players'].push({
+						id:Players[i]["id"],
+						role:RoleLeft[index]
+					}); 
+					document.getElementById('player'+(i+1)).src = Cards[RoleLeft[index]];
+					document.getElementById('player'+(i+1)).style.visibility = 'visible';
+					RoleLeft.splice(index, 1);
+				};
+			};
+			document.getElementById('validate').style.visibility = 'visible';
+		} else {
+			alert('You made a mistake somewhere ;c');
+		};
+	};
+	
+	function Delete(){
+		ws.send(JSON.stringify({
+			act:"delete"
+		}));
+	};
+	
+	function List(Players){
+		var html = '';
+		for(var i = 0; i < Object.keys(Players).length ; i++){
+			html += '<li> \n';
+			html += Players[Object.keys(Players)[i]]['username'] + ' <img src="'+ Players[Object.keys(Players)[i]]['picture'] +'" style="width:45px; height:45px; border-radius: 50%;">\n';
+			html += '<img onload="Loaded();" id="player' + (i+1) + '" src="./static/mdj.png" style="visibility:hidden;width:35px; height:35px; border-radius: 50%;">\n';
+			html += '</li>\n';
+		};
+		document.getElementById('players').innerHTML = html;
+	};
+	
+	function NumberChange(Role){
+		if(document.getElementById(Role).value < 0){
+			document.getElementById(Role).value = 0;
+		} else if (document.getElementById(Role).value > Object.keys(Players).length-1 && Role != "MDJ") {
+			document.getElementById(Role).value = Object.keys(Players).length-1;
+		};
+		
+		if(document.getElementById(Role).value < 1 && Role == "MDJ"){
+			document.getElementById(Role).value = 1;
+		} else if (document.getElementById(Role).value > Object.keys(Players).length && Role == "MDJ") {
+			document.getElementById(Role).value = Object.keys(Players).length;
+		};
+		
+		if(Role == "MDJ"){
+			for(var i = 0; i < Object.keys(Players).length; i++){
+				if(document.getElementById(Role).value == i+1){
+					document.getElementById('player'+(i+1)).style.visibility = 'visible';
+					document.getElementById('player'+(i+1)).src = './static/mdj.png';
+				} else {
+					document.getElementById('player'+(i+1)).style.visibility = 'hidden';
+				};
+			};
+			document.getElementById('validate').style.visibility = 'hidden';
+		};
+	};
+	
+	function Roles(Names, Cards){
+		var html = '';
+		for(var i = 0; i < Names.length-1 ; i++){
+			if(Names[i] == "MDJ"){
+				val = 1;
+			} else {
+				val = 0;
+			};
+			html += '<li> \n';
+			html += Names[i] + ' <img src="'+ Cards[Names[i]] +'" style="width:35px; height:35px; border-radius: 50%;">\n';
+			html += '<input onclick="NumberChange(\'' + Names[i] + '\')" onchange="NumberChange(\'' + Names[i] + '\')" style="margin-left:10px; color:black; width:50px;" placeholder="0" value="' + val + '" type="number" id="' + Names[i] + '">'
+			html += '</li>\n';
+		};
+		document.getElementById('roles').innerHTML = html;
+	};
+	
+	if ("WebSocket" in window) {
+		var ws = new WebSocket("ws://127.0.0.1:8080/ws");
+		ws.onopen = function() {};
+		ws.onmessage = function (evt) { 
+			console.log(evt.data)
+			var message = evt.data;
+			var msg = JSON.parse(message);
+			if(msg['act'] == 'players'){
+				List(msg['players']);
+				Players = msg['players'];
+			} else if(msg['act'] == 'roles'){
+				Names = []
+				Cards = {}
+				for(var i = 0; i < msg['roles'].length; i++) {
+					Names.push(msg['roles'][i]['name'])
+					Cards[msg['roles'][i]['name']] = 'static/' + msg['roles'][i]['card']
+				}
+				Roles(Names, Cards);
+			};
+		};
+		ws.onclose = function() { 
+			alert("Connection is closed..."); 
+		};
+	} else {
+		alert("Your browser is NOT supported!");
+	};
+	
+	
+	function Loaded(){
+		if(!Done){
+			document.getElementById('player1').style.visibility = 'visible';
+			Done = true;
+		};
+		document.getElementById('count').innerHTML = 'Players (' + Object.keys(Players).length + ') :';
+	};
+</script>
+</html>

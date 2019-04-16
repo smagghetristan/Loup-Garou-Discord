@@ -1,4 +1,4 @@
 
-config/config.go
 *.bat
 *.exe
+config/token.go

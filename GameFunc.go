@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -17,6 +18,23 @@ func GameStart() {
 		Finished: false,
 		Players:  config.Players,
 	}
+}
+
+func sendComp() {
+	Comp := map[string]int{}
+	Msg := ""
+	for i := range config.CurrentGame.Players {
+		Comp[config.CurrentGame.Players[i].Role.Name]++
+	}
+	for key, amount := range Comp {
+		Msg += strconv.Itoa(amount) + " **" + key + `**
+`
+	}
+	embed := &discordgo.MessageEmbed{
+		Title:       "__Composition :__",
+		Description: Msg,
+	}
+	dg.ChannelMessageSendEmbed(config.CurrentGame.GameStats.ID, embed)
 }
 
 func ChannelReload() {

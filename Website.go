@@ -100,6 +100,8 @@ func ws(w http.ResponseWriter, r *http.Request) {
 			go GameStart()
 		} else if rec.Action == "begin" {
 			go GameBegin(rec)
+		} else if rec.Action == "sendComp" {
+			go sendComp()
 		} else if rec.Action == "delete" {
 			go ChannelDelete()
 		} else if rec.Action == "day" {

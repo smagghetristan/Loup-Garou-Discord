@@ -25,6 +25,8 @@
 				<h1 style="color:white;"> Actions : </h1>
 				<br/>
 				<div id="actions" class="list-group" style="font-size:20px; color:white">
+					<input onclick="SendComp();" class="btn btn-primary list-group-item list-group-item-info" style="font-size:15px; width:250px;" value="Composition">
+					<br />
 					<input onclick="Night();" class="btn btn-primary list-group-item list-group-item-info" style="font-size:15px; width:250px;" value="Night">
 					<br />
 					<input onclick="Day();" class="btn btn-primary list-group-item list-group-item-info" style="font-size:15px; width:250px;" value="Day">
@@ -107,6 +109,12 @@
 	function Delete(){
 		ws.send(JSON.stringify({
 			act:"delete"
+		}));
+	};
+	
+	function SendComp(){
+		ws.send(JSON.stringify({
+			act:"sendComp"
 		}));
 	};
 	

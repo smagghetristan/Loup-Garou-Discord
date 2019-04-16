@@ -287,5 +287,5 @@ func GameBegin(Data Received) {
 		}
 	}
 	go ChannelGenerator()
-	//go DMSender()
+	go DMSender()
 }

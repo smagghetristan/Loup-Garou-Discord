@@ -119,6 +119,6 @@ func GameBegin(Data Received) {
 			}
 		}
 	}
-	//go ChannelGenerator()
+	go ChannelGenerator()
 	go DMSender()
 }

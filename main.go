@@ -68,8 +68,9 @@ func botReady(s *discordgo.Session, event *discordgo.Ready) {
 
 func main() {
 	box = packr.NewBox("./www")
+	var err error
 	// Create a new Discord session using the provided bot token.
-	dg, err := discordgo.New("Bot " + config.Token)
+	dg, err = discordgo.New("Bot " + config.Token)
 	if err != nil {
 		fmt.Println("error creating Discord session,", err)
 		return

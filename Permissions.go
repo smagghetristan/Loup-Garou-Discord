@@ -10,6 +10,83 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+func ChamDayPerm(userID string) *discordgo.ChannelEdit {
+	Perm := &discordgo.ChannelEdit{
+		PermissionOverwrites: []*discordgo.PermissionOverwrite{{
+			ID:   config.GuildID,
+			Type: "role",
+			Deny: Permissions.VIEW_CHANNEL,
+		}, {
+			ID:    dg.State.User.ID,
+			Type:  "member",
+			Allow: Permissions.VIEW_CHANNEL,
+		}, {
+			ID:   userID,
+			Type: "member",
+			Deny: Permissions.VIEW_CHANNEL,
+		}},
+	}
+	return Perm
+}
+
+func NormalDayPerm(userID string) *discordgo.ChannelEdit {
+	Perm := &discordgo.ChannelEdit{
+		PermissionOverwrites: []*discordgo.PermissionOverwrite{{
+			ID:   config.GuildID,
+			Type: "role",
+			Deny: Permissions.VIEW_CHANNEL,
+		}, {
+			ID:    dg.State.User.ID,
+			Type:  "member",
+			Allow: Permissions.VIEW_CHANNEL,
+		}, {
+			ID:   userID,
+			Type: "member",
+			Deny: Permissions.VIEW_CHANNEL,
+		}},
+	}
+	return Perm
+}
+
+func ChamNightPerm(userID string) *discordgo.ChannelEdit {
+	Perm := &discordgo.ChannelEdit{
+		PermissionOverwrites: []*discordgo.PermissionOverwrite{{
+			ID:   config.GuildID,
+			Type: "role",
+			Deny: Permissions.VIEW_CHANNEL,
+		}, {
+			ID:    dg.State.User.ID,
+			Type:  "member",
+			Allow: Permissions.VIEW_CHANNEL,
+		}, {
+			ID:    userID,
+			Type:  "member",
+			Allow: Permissions.VIEW_CHANNEL,
+			Deny:  Permissions.SEND_MESSAGES + Permissions.READ_MESSAGE_HISTORY,
+		}},
+	}
+	return Perm
+}
+
+func NormalNightPerm(userID string) *discordgo.ChannelEdit {
+	Perm := &discordgo.ChannelEdit{
+		PermissionOverwrites: []*discordgo.PermissionOverwrite{{
+			ID:   config.GuildID,
+			Type: "role",
+			Deny: Permissions.VIEW_CHANNEL,
+		}, {
+			ID:    dg.State.User.ID,
+			Type:  "member",
+			Allow: Permissions.VIEW_CHANNEL,
+		}, {
+			ID:    userID,
+			Type:  "member",
+			Allow: Permissions.VIEW_CHANNEL,
+		}},
+	}
+	return Perm
+}
+
 func Clear(channelID string) {
 	number := 99
 	if number < 100 {
@@ -31,15 +108,17 @@ func Clear(channelID string) {
 func DayPerm() {
 	for i := range config.CurrentGame.Players {
 		if config.CurrentGame.Players[i].Role.Name != "MDJ" {
-			if config.CurrentGame.Players[i].Role.Name != "Mort" {
-				VoicePerm := &discordgo.ChannelEdit{
-					PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-						ID:    config.CurrentGame.Players[i].ID,
-						Type:  "member",
-						Allow: Permissions.SPEAK,
-					}},
+			if config.CurrentGame.Players[i].Role.Name == "Chaman" {
+				Clear(config.CurrentGame.Deads.ID)
+				_, err := dg.ChannelEditComplex(config.CurrentGame.Deads.ID, ChamDayPerm(config.CurrentGame.Players[i].ID))
+				if err != nil {
+					//
 				}
-				_, err := dg.ChannelEditComplex(config.VoiceChannel, VoicePerm)
+				time.Sleep(10 * time.Millisecond)
+			}
+
+			if config.CurrentGame.Players[i].Role.Name != "Mort" {
+				err := MuteSomeone(config.CurrentGame.Players[i].ID, false)
 				if err != nil {
 					//
 				}
@@ -49,14 +128,7 @@ func DayPerm() {
 			for k := range config.CurrentGame.Channels {
 
 				if config.CurrentGame.Players[i].Infected && config.CurrentGame.Channels[k].Name == "loup-garou" {
-					TextPerm := &discordgo.ChannelEdit{
-						PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-							ID:   config.CurrentGame.Players[i].ID,
-							Type: "member",
-							Deny: Permissions.VIEW_CHANNEL,
-						}},
-					}
-					_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, TextPerm)
+					_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, NormalDayPerm(config.CurrentGame.Players[i].ID))
 					if err != nil {
 						//
 					}
@@ -64,28 +136,14 @@ func DayPerm() {
 				}
 
 				if config.CurrentGame.Players[i].Role.ChannelName == config.CurrentGame.Channels[k].Name {
-					TextPerm := &discordgo.ChannelEdit{
-						PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-							ID:   config.CurrentGame.Players[i].ID,
-							Type: "member",
-							Deny: Permissions.VIEW_CHANNEL,
-						}},
-					}
-					_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, TextPerm)
+					_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, NormalDayPerm(config.CurrentGame.Players[i].ID))
 					if err != nil {
 						//
 					}
 					time.Sleep(10 * time.Millisecond)
 				}
 				if config.CurrentGame.Players[i].Role.Team.HasChannel && config.CurrentGame.Players[i].Role.Team.ChannelName == config.CurrentGame.Channels[k].Name {
-					TextPerm := &discordgo.ChannelEdit{
-						PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-							ID:   config.CurrentGame.Players[i].ID,
-							Type: "member",
-							Deny: Permissions.VIEW_CHANNEL,
-						}},
-					}
-					_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, TextPerm)
+					_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, NormalDayPerm(config.CurrentGame.Players[i].ID))
 					if err != nil {
 						//
 					}
@@ -100,74 +158,43 @@ func NightPerm() {
 	Clear(config.CurrentGame.Votes.ID)
 	for i := range config.CurrentGame.Players {
 		if config.CurrentGame.Players[i].Role.Name != "MDJ" {
-			if config.CurrentGame.Players[i].Role.Name != "Mort" {
-				VoicePerm := &discordgo.ChannelEdit{
-					PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-						ID:   config.CurrentGame.Players[i].ID,
-						Type: "member",
-						Deny: Permissions.SPEAK,
-					}},
-				}
-				_, err := dg.ChannelEditComplex(config.VoiceChannel, VoicePerm)
+
+			if config.CurrentGame.Players[i].Role.Name == "Chaman" {
+				Clear(config.CurrentGame.Deads.ID)
+				_, err := dg.ChannelEditComplex(config.CurrentGame.Deads.ID, ChamNightPerm(config.CurrentGame.Players[i].ID))
 				if err != nil {
 					//
 				}
+				time.Sleep(10 * time.Millisecond)
+			}
+
+			if config.CurrentGame.Players[i].Role.Name != "Mort" {
+				err := MuteSomeone(config.CurrentGame.Players[i].ID, true)
+				if err != nil {
+					//
+				}
+				time.Sleep(10 * time.Millisecond)
 			}
 			time.Sleep(10 * time.Millisecond)
 
 			for k := range config.CurrentGame.Channels {
 
 				if config.CurrentGame.Players[i].Infected && config.CurrentGame.Channels[k].Name == "loup-garou" {
-					TextPerm := &discordgo.ChannelEdit{
-						PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-							ID:    config.CurrentGame.Players[i].ID,
-							Type:  "member",
-							Allow: Permissions.VIEW_CHANNEL,
-						}},
-					}
-					_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, TextPerm)
+					_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, NormalNightPerm(config.CurrentGame.Players[i].ID))
 					if err != nil {
 						//
 					}
 					time.Sleep(10 * time.Millisecond)
 				}
-
 				if config.CurrentGame.Players[i].Role.ChannelName == config.CurrentGame.Channels[k].Name {
-					TextPerm := &discordgo.ChannelEdit{}
-					if config.CurrentGame.Players[i].Role.Name != "Chaman" {
-						TextPerm = &discordgo.ChannelEdit{
-							PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-								ID:    config.CurrentGame.Players[i].ID,
-								Type:  "member",
-								Allow: Permissions.VIEW_CHANNEL,
-							}},
-						}
-					} else {
-						Clear(config.CurrentGame.Deads.ID)
-						TextPerm = &discordgo.ChannelEdit{
-							PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-								ID:    config.CurrentGame.Players[i].ID,
-								Type:  "member",
-								Allow: Permissions.VIEW_CHANNEL,
-								Deny:  Permissions.SEND_MESSAGES + Permissions.READ_MESSAGE_HISTORY,
-							}},
-						}
-					}
-					_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, TextPerm)
+					_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, NormalNightPerm(config.CurrentGame.Players[i].ID))
 					if err != nil {
 						//
 					}
 					time.Sleep(10 * time.Millisecond)
 				}
 				if config.CurrentGame.Players[i].Role.Team.HasChannel && config.CurrentGame.Players[i].Role.Team.ChannelName == config.CurrentGame.Channels[k].Name {
-					TextPerm := &discordgo.ChannelEdit{
-						PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-							ID:    config.CurrentGame.Players[i].ID,
-							Type:  "member",
-							Allow: Permissions.VIEW_CHANNEL,
-						}},
-					}
-					_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, TextPerm)
+					_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, NormalNightPerm(config.CurrentGame.Players[i].ID))
 					if err != nil {
 						//
 					}
@@ -182,15 +209,18 @@ func DayPermPlayer(PlayerID string) {
 	for i := range config.CurrentGame.Players {
 		if config.CurrentGame.Players[i].ID == PlayerID {
 			if config.CurrentGame.Players[i].Role.Name != "MDJ" {
-				if config.CurrentGame.Players[i].Role.Name != "Mort" {
-					VoicePerm := &discordgo.ChannelEdit{
-						PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-							ID:    config.CurrentGame.Players[i].ID,
-							Type:  "member",
-							Allow: Permissions.SPEAK,
-						}},
+
+				if config.CurrentGame.Players[i].Role.Name == "Chaman" {
+					Clear(config.CurrentGame.Deads.ID)
+					_, err := dg.ChannelEditComplex(config.CurrentGame.Deads.ID, ChamDayPerm(config.CurrentGame.Players[i].ID))
+					if err != nil {
+						//
 					}
-					_, err := dg.ChannelEditComplex(config.VoiceChannel, VoicePerm)
+					time.Sleep(10 * time.Millisecond)
+				}
+
+				if config.CurrentGame.Players[i].Role.Name != "Mort" {
+					err := MuteSomeone(config.CurrentGame.Players[i].ID, false)
 					if err != nil {
 						//
 					}
@@ -200,14 +230,7 @@ func DayPermPlayer(PlayerID string) {
 				for k := range config.CurrentGame.Channels {
 
 					if config.CurrentGame.Players[i].Infected && config.CurrentGame.Channels[k].Name == "loup-garou" {
-						TextPerm := &discordgo.ChannelEdit{
-							PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-								ID:   config.CurrentGame.Players[i].ID,
-								Type: "member",
-								Deny: Permissions.VIEW_CHANNEL,
-							}},
-						}
-						_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, TextPerm)
+						_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, NormalDayPerm(config.CurrentGame.Players[i].ID))
 						if err != nil {
 							//
 						}
@@ -215,28 +238,14 @@ func DayPermPlayer(PlayerID string) {
 					}
 
 					if config.CurrentGame.Players[i].Role.ChannelName == config.CurrentGame.Channels[k].Name {
-						TextPerm := &discordgo.ChannelEdit{
-							PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-								ID:   config.CurrentGame.Players[i].ID,
-								Type: "member",
-								Deny: Permissions.VIEW_CHANNEL,
-							}},
-						}
-						_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, TextPerm)
+						_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, NormalDayPerm(config.CurrentGame.Players[i].ID))
 						if err != nil {
 							//
 						}
 						time.Sleep(10 * time.Millisecond)
 					}
 					if config.CurrentGame.Players[i].Role.Team.HasChannel && config.CurrentGame.Players[i].Role.Team.ChannelName == config.CurrentGame.Channels[k].Name {
-						TextPerm := &discordgo.ChannelEdit{
-							PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-								ID:   config.CurrentGame.Players[i].ID,
-								Type: "member",
-								Deny: Permissions.VIEW_CHANNEL,
-							}},
-						}
-						_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, TextPerm)
+						_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, NormalDayPerm(config.CurrentGame.Players[i].ID))
 						if err != nil {
 							//
 						}
@@ -253,15 +262,18 @@ func NightPermPlayer(PlayerID string) {
 	for i := range config.CurrentGame.Players {
 		if config.CurrentGame.Players[i].ID == PlayerID {
 			if config.CurrentGame.Players[i].Role.Name != "MDJ" {
-				if config.CurrentGame.Players[i].Role.Name != "Mort" {
-					VoicePerm := &discordgo.ChannelEdit{
-						PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-							ID:   config.CurrentGame.Players[i].ID,
-							Type: "member",
-							Deny: Permissions.SPEAK,
-						}},
+
+				if config.CurrentGame.Players[i].Role.Name == "Chaman" {
+					Clear(config.CurrentGame.Deads.ID)
+					_, err := dg.ChannelEditComplex(config.CurrentGame.Deads.ID, ChamNightPerm(config.CurrentGame.Players[i].ID))
+					if err != nil {
+						//
 					}
-					_, err := dg.ChannelEditComplex(config.VoiceChannel, VoicePerm)
+					time.Sleep(10 * time.Millisecond)
+				}
+
+				if config.CurrentGame.Players[i].Role.Name != "Mort" {
+					err := MuteSomeone(config.CurrentGame.Players[i].ID, true)
 					if err != nil {
 						//
 					}
@@ -271,14 +283,7 @@ func NightPermPlayer(PlayerID string) {
 				for k := range config.CurrentGame.Channels {
 
 					if config.CurrentGame.Players[i].Infected && config.CurrentGame.Channels[k].Name == "loup-garou" {
-						TextPerm := &discordgo.ChannelEdit{
-							PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-								ID:    config.CurrentGame.Players[i].ID,
-								Type:  "member",
-								Allow: Permissions.VIEW_CHANNEL,
-							}},
-						}
-						_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, TextPerm)
+						_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, NormalNightPerm(config.CurrentGame.Players[i].ID))
 						if err != nil {
 							//
 						}
@@ -286,41 +291,14 @@ func NightPermPlayer(PlayerID string) {
 					}
 
 					if config.CurrentGame.Players[i].Role.ChannelName == config.CurrentGame.Channels[k].Name {
-						TextPerm := &discordgo.ChannelEdit{}
-						if config.CurrentGame.Players[i].Role.Name != "Chaman" {
-							TextPerm = &discordgo.ChannelEdit{
-								PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-									ID:    config.CurrentGame.Players[i].ID,
-									Type:  "member",
-									Allow: Permissions.VIEW_CHANNEL,
-								}},
-							}
-						} else {
-							Clear(config.CurrentGame.Deads.ID)
-							TextPerm = &discordgo.ChannelEdit{
-								PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-									ID:    config.CurrentGame.Players[i].ID,
-									Type:  "member",
-									Allow: Permissions.VIEW_CHANNEL,
-									Deny:  Permissions.SEND_MESSAGES + Permissions.READ_MESSAGE_HISTORY,
-								}},
-							}
-						}
-						_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, TextPerm)
+						_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, NormalNightPerm(config.CurrentGame.Players[i].ID))
 						if err != nil {
 							//
 						}
 						time.Sleep(10 * time.Millisecond)
 					}
 					if config.CurrentGame.Players[i].Role.Team.HasChannel && config.CurrentGame.Players[i].Role.Team.ChannelName == config.CurrentGame.Channels[k].Name {
-						TextPerm := &discordgo.ChannelEdit{
-							PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-								ID:    config.CurrentGame.Players[i].ID,
-								Type:  "member",
-								Allow: Permissions.VIEW_CHANNEL,
-							}},
-						}
-						_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, TextPerm)
+						_, err := dg.ChannelEditComplex(config.CurrentGame.Channels[k].ID, NormalNightPerm(config.CurrentGame.Players[i].ID))
 						if err != nil {
 							//
 						}

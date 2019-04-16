@@ -185,9 +185,8 @@ func SetupRole() {
 	}
 
 	Chaman := Role{
-		Name:        "Chaman",
-		Image:       "cham.png",
-		ChannelName: "morts",
+		Name:  "Chaman",
+		Image: "cham.png",
 		Description: `Pendant la nuit, tu peux voir ce que disent les morts.
 				During the night, you can see what the Deads have to say.`,
 		Team: Village,

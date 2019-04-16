@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -28,6 +29,27 @@ type Received struct {
 	Amount int          `json:"amount"`
 }
 
+type SendGameWebsocket struct {
+	Players []config.Player `json:"players"`
+}
+
+func SendCards() string {
+	Map := map[string]string{}
+	for i := range config.AllRoles {
+		Map[config.AllRoles[i].Name] = config.AllRoles[i].Image
+	}
+	StringMap, _ := json.Marshal(Map)
+	return string(StringMap)
+}
+
+func SendGame() string {
+	ToSend := SendGameWebsocket{
+		Players: config.CurrentGame.Players,
+	}
+	StringJSON, _ := json.Marshal(ToSend)
+	return string(StringJSON)
+}
+
 func handler(w http.ResponseWriter, r *http.Request) {
 	Path := r.URL.Path[1:]
 	if Path == "" && !config.CurrentGame.Started {
@@ -41,6 +63,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	} else if Path == "control" && config.CurrentGame.Started {
 		dat, err := box.FindString("control.html")
 		check(err)
+		dat += "<script> var Cards = " + SendCards() + "</script>"
+		dat += "<script> var Game = " + SendGame() + "</script>"
 		fmt.Fprintf(w, dat)
 	} else {
 		dat, err := box.FindString("index.html")
@@ -70,49 +94,48 @@ func ws(w http.ResponseWriter, r *http.Request) {
 		rec := Received{}
 		err := conn.ReadJSON(&rec)
 		if err != nil {
-			fmt.Println(err)
 			return
 		}
 		if rec.Action == "start" {
-			GameStart()
+			go GameStart()
 		} else if rec.Action == "begin" {
-			GameBegin(rec)
+			go GameBegin(rec)
 		} else if rec.Action == "delete" {
-			ChannelDelete()
+			go ChannelDelete()
 		} else if rec.Action == "day" {
-			DayPerm()
+			go DayPerm()
 		} else if rec.Action == "night" {
-			NightPerm()
+			go NightPerm()
 		} else if rec.Action == "dayP" {
-			DayPermPlayer(rec.ID)
+			go DayPermPlayer(rec.ID)
 		} else if rec.Action == "nightP" {
-			NightPermPlayer(rec.ID)
+			go NightPermPlayer(rec.ID)
 		} else if rec.Action == "kill" {
-			GameBegin(rec)
+			go Kill(rec.ID)
 		} else if rec.Action == "infect" {
-			Infect(rec.ID)
+			go Infect(rec.ID)
 		} else if rec.Action == "mute" {
-			Mute(rec.ID)
+			go Mute(rec.ID)
 		} else if rec.Action == "muteall" {
-			MuteAll()
+			go MuteAll()
 		} else if rec.Action == "reloadchan" {
-			ChannelReload()
+			go ChannelReload()
 		} else if rec.Action == "dice" {
-			RollDice(rec.Type, rec.Amount)
+			go RollDice(rec.Type, rec.Amount)
 		} else if rec.Action == "chlg" {
-			ChienLoupChange()
+			go ChienLoupChange()
 		} else if rec.Action == "mmort" {
-			MaitreMort()
+			go MaitreMort()
 		} else if rec.Action == "vwin" {
-			VillageWin()
+			go VillageWin()
 		} else if rec.Action == "wwin" {
-			WolvesWin()
+			go WolvesWin()
 		} else if rec.Action == "awin" {
-			AngelWin()
+			go AngelWin()
 		} else if rec.Action == "cwin" {
-			CoupleWin()
+			go CoupleWin()
 		} else if rec.Action == "lgbwin" {
-			LoupBlancWin()
+			go LoupBlancWin()
 		}
 	}
 }

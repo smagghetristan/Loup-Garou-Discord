@@ -8,7 +8,7 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 	</head>
-<body background="static/background.png">
+<body background="./b/static/background.png" style="background-color:#0F1C70;">
 	<br />
 	<div class="container">
 		<input onclick="Delete();" class="btn btn-danger" style="font-size:15px; position: absolute; top: 0; right: 0;" value="Delete Channels">
@@ -117,7 +117,7 @@
 		for(var i = 0; i < Object.keys(Players).length ; i++){
 			html += '<li> \n';
 			html += Players[Object.keys(Players)[i]]['username'] + ' <img src="'+ Players[Object.keys(Players)[i]]['picture'] +'" style="width:45px; height:45px; border-radius: 50%;">\n';
-			html += '<img onload="Loaded();" id="player' + (i+1) + '" src="./static/mdj.png" style="visibility:hidden;width:35px; height:35px; border-radius: 50%;">\n';
+			html += '<img onload="Loaded();" id="player' + (i+1) + '" src="./b/static/mdj.png" style="visibility:hidden;width:35px; height:35px; border-radius: 50%;">\n';
 			html += '</li>\n';
 		};
 		document.getElementById('players').innerHTML = html;
@@ -140,7 +140,7 @@
 			for(var i = 0; i < Object.keys(Players).length; i++){
 				if(document.getElementById(Role).value == i+1){
 					document.getElementById('player'+(i+1)).style.visibility = 'visible';
-					document.getElementById('player'+(i+1)).src = './static/mdj.png';
+					document.getElementById('player'+(i+1)).src = './b/static/mdj.png';
 				} else {
 					document.getElementById('player'+(i+1)).style.visibility = 'hidden';
 				};
@@ -180,7 +180,7 @@
 				Cards = {}
 				for(var i = 0; i < msg['roles'].length; i++) {
 					Names.push(msg['roles'][i]['name'])
-					Cards[msg['roles'][i]['name']] = 'static/' + msg['roles'][i]['card']
+					Cards[msg['roles'][i]['name']] = './b/static/' + msg['roles'][i]['card']
 				}
 				Roles(Names, Cards);
 			};

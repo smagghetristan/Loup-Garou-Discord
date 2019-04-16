@@ -25,71 +25,67 @@ func ChannelReload() {
 }
 
 func ChannelDelete() {
-	if len(config.CurrentGame.Channels) > 0 {
-		for i := range config.CurrentGame.Channels {
-			_, err := dg.ChannelDelete(config.CurrentGame.Channels[i].ID)
-			if err != nil {
-				return
+	channels, err := dg.GuildChannels(config.GuildID)
+	if err != nil {
+		return
+	}
+	for k := range channels {
+		for i := range config.Channels {
+			if config.Channels[i] == channels[k].Name {
+				_, err := dg.ChannelDelete(channels[k].ID)
+				if err != nil {
+					return
+				}
+				time.Sleep(10 * time.Millisecond)
 			}
-			time.Sleep(10 * time.Millisecond)
 		}
-	} else {
-		channels, err := dg.GuildChannels(config.GuildID)
+		for i := range config.TeamChannels {
+			if config.TeamChannels[i] == channels[k].Name {
+				_, err := dg.ChannelDelete(channels[k].ID)
+				if err != nil {
+					return
+				}
+				time.Sleep(10 * time.Millisecond)
+			}
+		}
+		for i := range config.SpecialChannels {
+			if config.SpecialChannels[i] == channels[k].Name {
+				_, err := dg.ChannelDelete(channels[k].ID)
+				if err != nil {
+					return
+				}
+				time.Sleep(10 * time.Millisecond)
+			}
+		}
+	}
+	if &config.CurrentGame.Deads == nil {
+		_, err := dg.ChannelDelete(config.CurrentGame.Deads.ID)
 		if err != nil {
 			return
 		}
-		for k := range channels {
-			for i := range config.Channels {
-				if config.Channels[i] == channels[k].Name {
-					_, err := dg.ChannelDelete(channels[k].ID)
-					if err != nil {
-						return
-					}
-					time.Sleep(10 * time.Millisecond)
-				}
-			}
-			for i := range config.TeamChannels {
-				if config.TeamChannels[i] == channels[k].Name {
-					_, err := dg.ChannelDelete(channels[k].ID)
-					if err != nil {
-						return
-					}
-					time.Sleep(10 * time.Millisecond)
-				}
-			}
-			for i := range config.SpecialChannels {
-				if config.SpecialChannels[i] == channels[k].Name {
-					_, err := dg.ChannelDelete(channels[k].ID)
-					if err != nil {
-						return
-					}
-					time.Sleep(10 * time.Millisecond)
-				}
-			}
+		time.Sleep(10 * time.Millisecond)
+	}
+	if &config.CurrentGame.GameStats == nil {
+		_, err := dg.ChannelDelete(config.CurrentGame.GameStats.ID)
+		if err != nil {
+			return
 		}
+		time.Sleep(10 * time.Millisecond)
 	}
-
-	_, err := dg.ChannelDelete(config.CurrentGame.Deads.ID)
-	if err != nil {
-		return
-	}
-	time.Sleep(10 * time.Millisecond)
-	_, err = dg.ChannelDelete(config.CurrentGame.GameStats.ID)
-	if err != nil {
-		return
-	}
-	time.Sleep(10 * time.Millisecond)
-	_, err = dg.ChannelDelete(config.CurrentGame.Votes.ID)
-	if err != nil {
-		return
+	if &config.CurrentGame.Votes == nil {
+		_, err := dg.ChannelDelete(config.CurrentGame.Votes.ID)
+		if err != nil {
+			return
+		}
 	}
 }
 
 func GenerateSpecials() {
 	Perms := []*discordgo.PermissionOverwrite{{
-		ID:   config.GuildID,
-		Type: "role",
-		Deny: Permissions.VIEW_CHANNEL,
+		ID:    config.GuildID,
+		Type:  "role",
+		Allow: Permissions.VIEW_CHANNEL,
+		Deny:  Permissions.SEND_MESSAGES,
 	}, {
 		ID:    dg.State.User.ID,
 		Type:  "member",
@@ -160,17 +156,17 @@ func ChannelGenerator() {
 			if toCreate[k] == config.CurrentGame.Players[i].Role.ChannelName {
 				existNormal = true
 			}
-			if toCreate[k] == config.CurrentGame.Players[i].Role.ChannelName {
+			if toCreate[k] == config.CurrentGame.Players[i].Role.Team.ChannelName {
 				existTeam = true
 				break
 			} else {
 				break
 			}
 		}
-		if !existNormal {
+		if !existNormal && config.CurrentGame.Players[i].Role.ChannelName != "" {
 			toCreate = append(toCreate, config.CurrentGame.Players[i].Role.ChannelName)
 		}
-		if !existTeam {
+		if !existTeam && config.CurrentGame.Players[i].Role.Team.ChannelName != "" {
 			toCreate = append(toCreate, config.CurrentGame.Players[i].Role.Team.ChannelName)
 		}
 	}
@@ -203,11 +199,12 @@ func ChannelGenerator() {
 		}
 		channel, err := dg.GuildChannelCreateComplex(config.GuildID, data)
 		if err != nil {
-			//
+			fmt.Println(err)
 		}
 		config.CurrentGame.Channels = append(config.CurrentGame.Channels, channel)
 		time.Sleep(10 * time.Millisecond)
 	}
+	GenerateSpecials()
 }
 
 func DMSender() {
@@ -272,5 +269,5 @@ func GameBegin(Data Received) {
 		}
 	}
 	go ChannelGenerator()
-	go DMSender()
+	//go DMSender()
 }

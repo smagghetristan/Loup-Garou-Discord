@@ -61,18 +61,24 @@ func RollDice(Type int, Amount int) {
 			break
 		}
 	}
+	fmt.Println(PFChan)
 	if exist {
 		if Type == 1 {
 			Won, embed := RollMessage(Type, roll)
+			fmt.Println(embed)
+			fmt.Println(PFChan.ID)
 			if Won {
-				dg.ChannelMessageSendEmbed(PFChan.ID, embed)
+				_, err := dg.ChannelMessageSendEmbed(PFChan.ID, embed)
+				if err != nil {
+					fmt.Println(err)
+				}
 				for i := range config.CurrentGame.Channels {
 					if config.CurrentGame.Channels[i].Name == "loup-garou" {
 						MessageSlice, _ := dg.ChannelMessages(config.CurrentGame.Channels[i].ID, Amount, "", "", "")
 						toSend := ""
 						for k := range MessageSlice {
-							toSend += MessageSlice[k].Content + `
-            `
+							toSend += "**Someone said** : " + MessageSlice[k].Content + `
+`
 						}
 						dg.ChannelMessageSend(PFChan.ID, toSend)
 						break
@@ -112,30 +118,18 @@ func MaitreMort() {
 func MuteAll() {
 	for i := range config.CurrentGame.Players {
 		if !config.CurrentGame.Players[i].ManualMute {
-			VoicePerm := &discordgo.ChannelEdit{
-				PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-					ID:   config.CurrentGame.Players[i].ID,
-					Type: "member",
-					Deny: Permissions.SPEAK,
-				}},
-			}
-			_, err := dg.ChannelEditComplex(config.VoiceChannel, VoicePerm)
+			err := MuteSomeone(config.CurrentGame.Players[i].ID, true)
 			if err != nil {
 				//
 			}
+			config.CurrentGame.Players[i].ManualMute = true
 			time.Sleep(10 * time.Millisecond)
 		} else {
-			VoicePerm := &discordgo.ChannelEdit{
-				PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-					ID:    config.CurrentGame.Players[i].ID,
-					Type:  "member",
-					Allow: Permissions.SPEAK,
-				}},
-			}
-			_, err := dg.ChannelEditComplex(config.VoiceChannel, VoicePerm)
+			err := MuteSomeone(config.CurrentGame.Players[i].ID, false)
 			if err != nil {
 				//
 			}
+			config.CurrentGame.Players[i].ManualMute = false
 			time.Sleep(10 * time.Millisecond)
 		}
 	}
@@ -145,30 +139,18 @@ func Mute(PlayerID string) {
 	for i := range config.CurrentGame.Players {
 		if config.CurrentGame.Players[i].ID == PlayerID {
 			if !config.CurrentGame.Players[i].ManualMute {
-				VoicePerm := &discordgo.ChannelEdit{
-					PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-						ID:   config.CurrentGame.Players[i].ID,
-						Type: "member",
-						Deny: Permissions.SPEAK,
-					}},
-				}
-				_, err := dg.ChannelEditComplex(config.VoiceChannel, VoicePerm)
+				err := MuteSomeone(config.CurrentGame.Players[i].ID, true)
 				if err != nil {
 					//
 				}
+				config.CurrentGame.Players[i].ManualMute = true
 				time.Sleep(10 * time.Millisecond)
 			} else {
-				VoicePerm := &discordgo.ChannelEdit{
-					PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-						ID:    config.CurrentGame.Players[i].ID,
-						Type:  "member",
-						Allow: Permissions.SPEAK,
-					}},
-				}
-				_, err := dg.ChannelEditComplex(config.VoiceChannel, VoicePerm)
+				err := MuteSomeone(config.CurrentGame.Players[i].ID, false)
 				if err != nil {
 					//
 				}
+				config.CurrentGame.Players[i].ManualMute = false
 				time.Sleep(10 * time.Millisecond)
 			}
 		}
@@ -186,24 +168,34 @@ func Infect(PlayerID string) {
 func Kill(PlayerID string) {
 	for i := range config.CurrentGame.Players {
 		if config.CurrentGame.Players[i].ID == PlayerID {
-			config.CurrentGame.Players[i].Role.Name = "Mort"
-			config.CurrentGame.Players[i].Role.Image = "mor.png"
-			config.CurrentGame.Players[i].Role.ChannelName = "morts"
-			emoji := strings.Replace(config.CurrentGame.Players[i].Role.Image, ".png", "", 1)
-			_, err := dg.ChannelMessageSend(config.CurrentGame.GameStats.ID, "**"+config.CurrentGame.Players[i].Username+"** est mort(e) et était : :"+emoji+":")
+			dat, err := box.FindString("40x40/" + config.CurrentGame.Players[i].Role.Image)
+			check(err)
+			Image := &discordgo.File{
+				Reader: strings.NewReader(dat),
+				Name:   "role.png",
+			}
+			Params := &discordgo.MessageSend{
+				Files: []*discordgo.File{Image},
+				Embed: &discordgo.MessageEmbed{
+					Title:       "__" + config.CurrentGame.Players[i].Username + "__ est mort(e) !",
+					Description: "Il/Elle était : **" + config.CurrentGame.Players[i].Role.Name + "** !",
+					Thumbnail: &discordgo.MessageEmbedThumbnail{
+						URL: "attachment://role.png",
+					},
+					Color: 0xFFDD00,
+				},
+			}
+			_, err = dg.ChannelMessageSendComplex(config.CurrentGame.GameStats.ID, Params)
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
 
-			VoicePerm := &discordgo.ChannelEdit{
-				PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-					ID:   config.CurrentGame.Players[i].ID,
-					Type: "member",
-					Deny: Permissions.SPEAK,
-				}},
-			}
-			_, err = dg.ChannelEditComplex(config.VoiceChannel, VoicePerm)
+			config.CurrentGame.Players[i].Role.Name = "Mort"
+			config.CurrentGame.Players[i].Role.Image = "mor.png"
+			config.CurrentGame.Players[i].Role.ChannelName = "morts"
+
+			err = MuteSomeone(config.CurrentGame.Players[i].ID, true)
 			if err != nil {
 				//
 			}

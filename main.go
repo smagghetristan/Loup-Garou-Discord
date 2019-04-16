@@ -67,6 +67,19 @@ func botReady(s *discordgo.Session, event *discordgo.Ready) {
 	scan(s)
 }
 
+func MuteSomeone(userID string, State bool) (err error) {
+	data := struct {
+		Muted bool `json:"mute"`
+	}{State}
+
+	_, err = dg.RequestWithBucketID("PATCH", discordgo.EndpointGuildMember(config.GuildID, userID), data, discordgo.EndpointGuildMember(config.GuildID, ""))
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func main() {
 	box = packr.NewBox("./www")
 	var err error
@@ -86,10 +99,10 @@ func main() {
 		fmt.Println("error opening connection,", err)
 		return
 	}
-
+	ChannelDelete()
 	http.HandleFunc("/ws", ws)
 	http.HandleFunc("/", handler)
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("D:\\BOTS\\Go\\src\\Test\\www\\static"))))
+	http.Handle("/b/", http.StripPrefix("/b/", http.FileServer(box)))
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
 	// Wait here until CTRL-C or other term signal is received.

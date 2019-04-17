@@ -7,7 +7,7 @@ import (
 
 var ImagePath = "static/"
 
-//IDs
+//Different IDs
 var VoiceChannel = "398084144862724098"
 var GuildID = "248880737518878720"
 var CategoryID = "398083936745553920"

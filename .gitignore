@@ -3,3 +3,6 @@
 *.exe
 config/token.go
 config.txt
+Compressed
+linux-v1.0.zip
+*.zip

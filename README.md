@@ -8,3 +8,7 @@
  - Your token will be saved next to the executable in a config.txt file.
  - You will have to know the game in order to play it.
  - The game webpage is hosted on 127.0.0.1:8080
+ 
+# Contact
+
+ - The best way to contact me is to join the official discord server : https://discord.gg/Q8NbBeQ

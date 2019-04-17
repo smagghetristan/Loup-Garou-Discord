@@ -1,11 +1,15 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"regexp"
 	"syscall"
 
 	"Loup.Garou/config"
@@ -81,13 +85,37 @@ func MuteSomeone(userID string, State bool) (err error) {
 	return
 }
 
+func FindToken() {
+	absPath, _ := filepath.Abs("./config.txt")
+	fileBytes, err := ioutil.ReadFile(absPath)
+	if err != nil || string(fileBytes) == "" {
+		reader := bufio.NewReader(os.Stdin)
+		color.Red("Enter token: ")
+		text, _ := reader.ReadString('\n')
+		config.Token = text
+		err := ioutil.WriteFile(absPath, []byte(text), 0644)
+		if err != nil {
+			//
+		}
+	} else {
+		var re = regexp.MustCompile(`\r\n`)
+		color.Green("Token retrieved : |" + re.ReplaceAllString(string(fileBytes), "") + "|")
+		config.Token = string(fileBytes)
+	}
+}
+
 func main() {
 	box = packr.NewBox("./www")
+
+	FindToken()
+
+	var re = regexp.MustCompile(`\r\n`)
 	var err error
 	// Create a new Discord session using the provided bot token.
-	dg, err = discordgo.New("Bot " + config.Token)
+	dg, err = discordgo.New("Bot " + re.ReplaceAllString(config.Token, ""))
 	if err != nil {
 		fmt.Println("error creating Discord session,", err)
+		box.AddString("config.txt", "")
 		return
 	}
 	//Setups

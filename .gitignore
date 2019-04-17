@@ -2,3 +2,4 @@
 *.bat
 *.exe
 config/token.go
+config.txt

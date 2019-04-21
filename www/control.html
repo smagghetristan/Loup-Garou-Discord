@@ -82,10 +82,13 @@
 	function List(Players){
 		var html = '';
 		for(var i = 0; i < Players.length ; i++){
+			if(Game['players'][i]['role']['name'] == ""){
+				document.location = './'
+			}
 			html += '<li > \n';
 			html += Players[i]['username'] + ' <img src="'+ Players[i]['picture'] +'" style="width:45px; height:45px; border-radius: 50%;">\n';
 			html += '<img id="player' + (i+1) + '" src="./b/static/mdj.png" style="width:35px; height:35px; border-radius: 50%; visibility: hidden;">\n';
-			if(Game['players'][i]['role'] != 'MDJ'){
+			if(Game['players'][i]['role']['name'] != 'MDJ'){
 				html += '<input onclick="Kill(\'' +Players[i]['id'] + '\');" class="btn btn-danger" style="font-size:15px; width:50px;" value="Kill">\n';
 				html += '<input onclick="Day(\'' +Players[i]['id'] + '\');" class="btn btn-primary" style="font-size:15px; width:70px;" value="Day">\n';
 				html += '<input onclick="Night(\'' +Players[i]['id'] + '\');" class="btn btn-primary" style="font-size:15px; width:70px;" value="Night">\n';

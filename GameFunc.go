@@ -33,8 +33,13 @@ func sendComp() {
 	embed := &discordgo.MessageEmbed{
 		Title:       "__Composition :__",
 		Description: Msg,
+		Color:       config.EmbedColor,
 	}
-	dg.ChannelMessageSendEmbed(config.CurrentGame.GameStats.ID, embed)
+	_, err := dg.ChannelMessageSendEmbed(config.CurrentGame.GameStats.ID, embed)
+	if err != nil {
+		fmt.Println(err)
+		//
+	}
 }
 
 func ChannelReload() {
@@ -107,7 +112,7 @@ func GenerateSpecials() {
 	}, {
 		ID:    dg.State.User.ID,
 		Type:  "member",
-		Allow: Permissions.VIEW_CHANNEL,
+		Allow: Permissions.VIEW_CHANNEL + Permissions.SEND_MESSAGES,
 	}}
 	data := discordgo.GuildChannelCreateData{
 		Name:                 "lg-gamestats",
@@ -128,7 +133,7 @@ func GenerateSpecials() {
 	}, {
 		ID:    dg.State.User.ID,
 		Type:  "member",
-		Allow: Permissions.VIEW_CHANNEL,
+		Allow: Permissions.VIEW_CHANNEL + Permissions.SEND_MESSAGES,
 	}}
 	data = discordgo.GuildChannelCreateData{
 		Name:                 "lg-vote",
@@ -142,15 +147,6 @@ func GenerateSpecials() {
 	}
 	config.CurrentGame.Votes = channel
 	time.Sleep(10 * time.Millisecond)
-	Perms = []*discordgo.PermissionOverwrite{{
-		ID:   config.GuildID,
-		Type: "role",
-		Deny: Permissions.VIEW_CHANNEL,
-	}, {
-		ID:    dg.State.User.ID,
-		Type:  "member",
-		Allow: Permissions.VIEW_CHANNEL,
-	}}
 	data = discordgo.GuildChannelCreateData{
 		Name:                 "lg-morts",
 		Type:                 discordgo.ChannelTypeGuildText,
@@ -235,7 +231,7 @@ func DMSender() {
 			embed := &discordgo.MessageEmbed{
 				Title:       "Loup-Garou",
 				Description: "Les rôles ont étés distribués",
-				Color:       0xFFDD00,
+				Color:       config.EmbedColor,
 			}
 			_, err = dg.ChannelMessageSendEmbed(dm.ID, embed)
 			if err != nil {
@@ -262,7 +258,7 @@ func DMSender() {
 					Image: &discordgo.MessageEmbedImage{
 						URL: "attachment://role.png",
 					},
-					Color: 0xFFDD00,
+					Color: config.EmbedColor,
 				},
 			}
 			_, err = dg.ChannelMessageSendComplex(dm.ID, Params)

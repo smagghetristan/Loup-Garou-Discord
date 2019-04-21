@@ -20,12 +20,14 @@ func RollMessage(Type int, Roll int) (bool, *discordgo.MessageEmbed) {
 			embed = &discordgo.MessageEmbed{
 				Title:       "Bravo !",
 				Description: "Ca a marché ! (" + strconv.Itoa(Roll) + "/100)",
+				Color:       config.EmbedColor,
 			}
 			return true, embed
 		} else {
 			embed = &discordgo.MessageEmbed{
 				Title:       "Dommage !",
 				Description: "Ca n'a pas marché ! (" + strconv.Itoa(Roll) + "/100)",
+				Color:       config.EmbedColor,
 			}
 			return false, embed
 		}
@@ -34,12 +36,14 @@ func RollMessage(Type int, Roll int) (bool, *discordgo.MessageEmbed) {
 			embed = &discordgo.MessageEmbed{
 				Title:       "Bravo !",
 				Description: "Ca a marché ! (" + strconv.Itoa(Roll) + "/100)",
+				Color:       config.EmbedColor,
 			}
 			return true, embed
 		} else {
 			embed = &discordgo.MessageEmbed{
 				Title:       "Dommage !",
 				Description: "Ca n'a pas marché ! (" + strconv.Itoa(Roll) + "/100)",
+				Color:       config.EmbedColor,
 			}
 			return false, embed
 		}
@@ -179,7 +183,7 @@ func Kill(PlayerID string) {
 					Thumbnail: &discordgo.MessageEmbedThumbnail{
 						URL: "attachment://role.png",
 					},
-					Color: 0xFFDD00,
+					Color: config.EmbedColor,
 				},
 			}
 			_, err = dg.ChannelMessageSendComplex(config.CurrentGame.GameStats.ID, Params)

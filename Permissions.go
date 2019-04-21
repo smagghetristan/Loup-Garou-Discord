@@ -19,7 +19,7 @@ func ChamDayPerm(userID string) *discordgo.ChannelEdit {
 		}, {
 			ID:    dg.State.User.ID,
 			Type:  "member",
-			Allow: Permissions.VIEW_CHANNEL,
+			Allow: Permissions.VIEW_CHANNEL + Permissions.SEND_MESSAGES,
 		}, {
 			ID:   userID,
 			Type: "member",
@@ -38,7 +38,7 @@ func NormalDayPerm(userID string) *discordgo.ChannelEdit {
 		}, {
 			ID:    dg.State.User.ID,
 			Type:  "member",
-			Allow: Permissions.VIEW_CHANNEL,
+			Allow: Permissions.VIEW_CHANNEL + Permissions.SEND_MESSAGES,
 		}, {
 			ID:   userID,
 			Type: "member",
@@ -57,7 +57,7 @@ func ChamNightPerm(userID string) *discordgo.ChannelEdit {
 		}, {
 			ID:    dg.State.User.ID,
 			Type:  "member",
-			Allow: Permissions.VIEW_CHANNEL,
+			Allow: Permissions.VIEW_CHANNEL + Permissions.SEND_MESSAGES,
 		}, {
 			ID:    userID,
 			Type:  "member",
@@ -77,7 +77,7 @@ func NormalNightPerm(userID string) *discordgo.ChannelEdit {
 		}, {
 			ID:    dg.State.User.ID,
 			Type:  "member",
-			Allow: Permissions.VIEW_CHANNEL,
+			Allow: Permissions.VIEW_CHANNEL + Permissions.SEND_MESSAGES,
 		}, {
 			ID:    userID,
 			Type:  "member",
@@ -108,6 +108,12 @@ func Clear(channelID string) {
 func DayPerm() {
 	for i := range config.CurrentGame.Players {
 		if config.CurrentGame.Players[i].Role.Name != "MDJ" {
+			_, err := dg.ChannelEditComplex(config.CurrentGame.Votes.ID, NormalDayPerm(config.CurrentGame.Players[i].ID))
+			if err != nil {
+				//
+			}
+			time.Sleep(10 * time.Millisecond)
+
 			if config.CurrentGame.Players[i].Role.Name == "Chaman" {
 				Clear(config.CurrentGame.Deads.ID)
 				_, err := dg.ChannelEditComplex(config.CurrentGame.Deads.ID, ChamDayPerm(config.CurrentGame.Players[i].ID))
@@ -158,6 +164,11 @@ func NightPerm() {
 	Clear(config.CurrentGame.Votes.ID)
 	for i := range config.CurrentGame.Players {
 		if config.CurrentGame.Players[i].Role.Name != "MDJ" {
+			_, err := dg.ChannelEditComplex(config.CurrentGame.Votes.ID, NormalNightPerm(config.CurrentGame.Players[i].ID))
+			if err != nil {
+				//
+			}
+			time.Sleep(10 * time.Millisecond)
 
 			if config.CurrentGame.Players[i].Role.Name == "Chaman" {
 				Clear(config.CurrentGame.Deads.ID)
@@ -209,6 +220,11 @@ func DayPermPlayer(PlayerID string) {
 	for i := range config.CurrentGame.Players {
 		if config.CurrentGame.Players[i].ID == PlayerID {
 			if config.CurrentGame.Players[i].Role.Name != "MDJ" {
+				_, err := dg.ChannelEditComplex(config.CurrentGame.Votes.ID, NormalDayPerm(config.CurrentGame.Players[i].ID))
+				if err != nil {
+					//
+				}
+				time.Sleep(10 * time.Millisecond)
 
 				if config.CurrentGame.Players[i].Role.Name == "Chaman" {
 					Clear(config.CurrentGame.Deads.ID)
@@ -262,6 +278,11 @@ func NightPermPlayer(PlayerID string) {
 	for i := range config.CurrentGame.Players {
 		if config.CurrentGame.Players[i].ID == PlayerID {
 			if config.CurrentGame.Players[i].Role.Name != "MDJ" {
+				_, err := dg.ChannelEditComplex(config.CurrentGame.Votes.ID, NormalNightPerm(config.CurrentGame.Players[i].ID))
+				if err != nil {
+					//
+				}
+				time.Sleep(10 * time.Millisecond)
 
 				if config.CurrentGame.Players[i].Role.Name == "Chaman" {
 					Clear(config.CurrentGame.Deads.ID)

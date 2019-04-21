@@ -24,7 +24,7 @@ func VillageWin() {
 			Image: &discordgo.MessageEmbedImage{
 				URL: "attachment://role.png",
 			},
-			Color: 0xFFDD00,
+			Color: config.EmbedColor,
 		},
 	}
 	_, err = dg.ChannelMessageSendComplex(config.CurrentGame.GameStats.ID, Params)
@@ -50,7 +50,7 @@ func WolvesWin() {
 			Image: &discordgo.MessageEmbedImage{
 				URL: "attachment://role.png",
 			},
-			Color: 0xFFDD00,
+			Color: config.EmbedColor,
 		},
 	}
 	_, err = dg.ChannelMessageSendComplex(config.CurrentGame.GameStats.ID, Params)
@@ -76,7 +76,7 @@ func AngelWin() {
 			Image: &discordgo.MessageEmbedImage{
 				URL: "attachment://role.png",
 			},
-			Color: 0xFFDD00,
+			Color: config.EmbedColor,
 		},
 	}
 	_, err = dg.ChannelMessageSendComplex(config.CurrentGame.GameStats.ID, Params)
@@ -102,7 +102,7 @@ func CoupleWin() {
 			Image: &discordgo.MessageEmbedImage{
 				URL: "attachment://role.png",
 			},
-			Color: 0xFFDD00,
+			Color: config.EmbedColor,
 		},
 	}
 	_, err = dg.ChannelMessageSendComplex(config.CurrentGame.GameStats.ID, Params)
@@ -128,7 +128,7 @@ func LoupBlancWin() {
 			Image: &discordgo.MessageEmbedImage{
 				URL: "attachment://role.png",
 			},
-			Color: 0xFFDD00,
+			Color: config.EmbedColor,
 		},
 	}
 	_, err = dg.ChannelMessageSendComplex(config.CurrentGame.GameStats.ID, Params)

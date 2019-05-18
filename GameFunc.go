@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -22,23 +21,37 @@ func GameStart() {
 
 func sendComp() {
 	Comp := map[string]int{}
-	Msg := ""
+	Cards := map[string]string{}
 	for i := range config.CurrentGame.Players {
-		Comp[config.CurrentGame.Players[i].Role.Name]++
+		if config.CurrentGame.Players[i].Role.Name != "MDJ" {
+			Comp[config.CurrentGame.Players[i].Role.Name]++
+			Cards[config.CurrentGame.Players[i].Role.Name] = config.CurrentGame.Players[i].Role.Image
+		}
 	}
-	for key, amount := range Comp {
-		Msg += strconv.Itoa(amount) + " **" + key + `**
-`
-	}
-	embed := &discordgo.MessageEmbed{
-		Title:       "__Composition :__",
-		Description: Msg,
-		Color:       config.EmbedColor,
-	}
-	_, err := dg.ChannelMessageSendEmbed(config.CurrentGame.GameStats.ID, embed)
-	if err != nil {
-		fmt.Println(err)
-		//
+
+	WillSend := mkimage(Comp, Cards)
+
+	for i := range WillSend {
+		Image := &discordgo.File{
+			Reader: WillSend[i],
+			Name:   "compo.png",
+		}
+		Params := &discordgo.MessageSend{
+			Files: []*discordgo.File{Image},
+			Embed: &discordgo.MessageEmbed{
+				Title: "Composition",
+				Image: &discordgo.MessageEmbedImage{
+					URL: "attachment://compo.png",
+				},
+				Color: config.EmbedColor,
+			},
+		}
+		_, err := dg.ChannelMessageSendComplex(config.CurrentGame.GameStats.ID, Params)
+		if err != nil {
+			fmt.Println(err)
+			//
+		}
+		time.Sleep(config.SleepTime * time.Millisecond)
 	}
 }
 
@@ -59,7 +72,7 @@ func ChannelDelete() {
 				if err != nil {
 					return
 				}
-				time.Sleep(10 * time.Millisecond)
+				time.Sleep(config.SleepTime * time.Millisecond)
 			}
 		}
 		for i := range config.TeamChannels {
@@ -68,7 +81,7 @@ func ChannelDelete() {
 				if err != nil {
 					return
 				}
-				time.Sleep(10 * time.Millisecond)
+				time.Sleep(config.SleepTime * time.Millisecond)
 			}
 		}
 		for i := range config.SpecialChannels {
@@ -77,7 +90,7 @@ func ChannelDelete() {
 				if err != nil {
 					return
 				}
-				time.Sleep(10 * time.Millisecond)
+				time.Sleep(config.SleepTime * time.Millisecond)
 			}
 		}
 	}
@@ -86,14 +99,14 @@ func ChannelDelete() {
 		if err != nil {
 			return
 		}
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(config.SleepTime * time.Millisecond)
 	}
 	if &config.CurrentGame.GameStats == nil {
 		_, err := dg.ChannelDelete(config.CurrentGame.GameStats.ID)
 		if err != nil {
 			return
 		}
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(config.SleepTime * time.Millisecond)
 	}
 	if &config.CurrentGame.Votes == nil {
 		_, err := dg.ChannelDelete(config.CurrentGame.Votes.ID)
@@ -125,7 +138,7 @@ func GenerateSpecials() {
 		//
 	}
 	config.CurrentGame.GameStats = channel
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(config.SleepTime * time.Millisecond)
 	Perms = []*discordgo.PermissionOverwrite{{
 		ID:   config.GuildID,
 		Type: "role",
@@ -146,7 +159,7 @@ func GenerateSpecials() {
 		//
 	}
 	config.CurrentGame.Votes = channel
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(config.SleepTime * time.Millisecond)
 	data = discordgo.GuildChannelCreateData{
 		Name:                 "lg-morts",
 		Type:                 discordgo.ChannelTypeGuildText,
@@ -158,7 +171,7 @@ func GenerateSpecials() {
 		//
 	}
 	config.CurrentGame.Deads = channel
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(config.SleepTime * time.Millisecond)
 }
 
 func ChannelGenerator() {
@@ -216,29 +229,14 @@ func ChannelGenerator() {
 			fmt.Println(err)
 		}
 		config.CurrentGame.Channels = append(config.CurrentGame.Channels, channel)
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(config.SleepTime * time.Millisecond)
 	}
 	GenerateSpecials()
 }
 
 func DMSender() {
 	for i := range config.CurrentGame.Players {
-		if config.CurrentGame.Players[i].Role.Name == "MDJ" {
-			dm, err := dg.UserChannelCreate(config.CurrentGame.Players[i].ID)
-			if err != nil {
-				return
-			}
-			embed := &discordgo.MessageEmbed{
-				Title:       "Loup-Garou",
-				Description: "Les rôles ont étés distribués",
-				Color:       config.EmbedColor,
-			}
-			_, err = dg.ChannelMessageSendEmbed(dm.ID, embed)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-		} else {
+		if config.CurrentGame.Players[i].Role.Name != "MDJ" {
 			dm, err := dg.UserChannelCreate(config.CurrentGame.Players[i].ID)
 			if err != nil {
 				fmt.Println(err)
@@ -262,6 +260,24 @@ func DMSender() {
 				},
 			}
 			_, err = dg.ChannelMessageSendComplex(dm.ID, Params)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+		}
+	}
+	for i := range config.CurrentGame.Players {
+		if config.CurrentGame.Players[i].Role.Name == "MDJ" {
+			dm, err := dg.UserChannelCreate(config.CurrentGame.Players[i].ID)
+			if err != nil {
+				return
+			}
+			embed := &discordgo.MessageEmbed{
+				Title:       "Loup-Garou",
+				Description: "Les rôles ont étés distribués",
+				Color:       config.EmbedColor,
+			}
+			_, err = dg.ChannelMessageSendEmbed(dm.ID, embed)
 			if err != nil {
 				fmt.Println(err)
 				return

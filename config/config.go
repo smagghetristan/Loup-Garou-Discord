@@ -1,6 +1,8 @@
 package config
 
 import (
+	"time"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/gorilla/websocket"
 )
@@ -14,6 +16,8 @@ var CategoryID = "398083936745553920"
 var Token = ""
 var EmbedColor = 0xFFDD00
 var CurrentGame Game
+
+var SleepTime time.Duration = 500
 
 //Slices
 

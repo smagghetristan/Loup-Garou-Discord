@@ -124,14 +124,14 @@ func MuteAll() {
 				//
 			}
 			config.CurrentGame.Players[i].ManualMute = true
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(config.SleepTime * time.Millisecond)
 		} else {
 			err := MuteSomeone(config.CurrentGame.Players[i].ID, false)
 			if err != nil {
 				//
 			}
 			config.CurrentGame.Players[i].ManualMute = false
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(config.SleepTime * time.Millisecond)
 		}
 	}
 }
@@ -145,14 +145,14 @@ func Mute(PlayerID string) {
 					//
 				}
 				config.CurrentGame.Players[i].ManualMute = true
-				time.Sleep(10 * time.Millisecond)
+				time.Sleep(config.SleepTime * time.Millisecond)
 			} else {
 				err := MuteSomeone(config.CurrentGame.Players[i].ID, false)
 				if err != nil {
 					//
 				}
 				config.CurrentGame.Players[i].ManualMute = false
-				time.Sleep(10 * time.Millisecond)
+				time.Sleep(config.SleepTime * time.Millisecond)
 			}
 		}
 	}
@@ -194,21 +194,42 @@ func Kill(PlayerID string) {
 
 			config.CurrentGame.Players[i].Role.Name = "Mort"
 			config.CurrentGame.Players[i].Role.Image = "mor.png"
-			config.CurrentGame.Players[i].Role.ChannelName = "morts"
+			config.CurrentGame.Players[i].Role.ChannelName = "lg-morts"
 
 			err = MuteSomeone(config.CurrentGame.Players[i].ID, true)
 			if err != nil {
 				//
 			}
 
-			TextPerm := &discordgo.ChannelEdit{
+			CurrentPerm := &discordgo.ChannelEdit{
 				PermissionOverwrites: []*discordgo.PermissionOverwrite{{
-					ID:    config.CurrentGame.Players[i].ID,
+					ID:   config.GuildID,
+					Type: "role",
+					Deny: Permissions.VIEW_CHANNEL,
+				}, {
+					ID:    dg.State.User.ID,
 					Type:  "member",
-					Allow: Permissions.VIEW_CHANNEL,
+					Allow: Permissions.VIEW_CHANNEL + Permissions.SEND_MESSAGES,
 				}},
 			}
-			_, err = dg.ChannelEditComplex(config.CurrentGame.Deads.ID, TextPerm)
+			for i := range config.CurrentGame.Players {
+				if config.CurrentGame.Players[i].Role.Name != "MDJ" {
+					if config.CurrentGame.Players[i].Role.Name == "Mort" {
+						CurrentPerm.PermissionOverwrites = append(CurrentPerm.PermissionOverwrites, &discordgo.PermissionOverwrite{
+							ID:    config.CurrentGame.Players[i].ID,
+							Type:  "member",
+							Allow: Permissions.VIEW_CHANNEL,
+						})
+					} else {
+						CurrentPerm.PermissionOverwrites = append(CurrentPerm.PermissionOverwrites, &discordgo.PermissionOverwrite{
+							ID:   config.CurrentGame.Players[i].ID,
+							Type: "member",
+							Deny: Permissions.VIEW_CHANNEL,
+						})
+					}
+				}
+			}
+			_, err = dg.ChannelEditComplex(config.CurrentGame.Deads.ID, CurrentPerm)
 			if err != nil {
 				//
 			}
